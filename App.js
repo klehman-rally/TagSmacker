@@ -8,13 +8,13 @@ Ext.define('CustomApp', {
     items:[
     	{
     		xtype: 'container',
-    		itemId: 'selector',
-    		width: 300,
+    		itemId: 'tagFileUploadDialog',
+    		width: 500,
 		},
 
 		{
     		xtype: 'container',
-    		itemId: 'grid',
+    		itemId: 'tagGrid',
             width: 500	
 		}
     	
@@ -22,108 +22,50 @@ Ext.define('CustomApp', {
   
 
     launch: function() {
-        //Write app code here
-        var me = this;
-        this.down('#selector').add({
-        	items: [{
-        		xtype: 'filefield',
-        		name: 'Tags',
-        		fieldLabel: 'Tags',
-        		labelWidth: 137,
-        		msgTarget: 'side',
-        		allowBlank: false,
-        		anchor: '100%',
-        		buttonText: 'Select Tag File...',
-        		listeners: {
-                            //change: this._importTags,
-                            //scope: this
-                            change: {
-                     			fn:
-                                function(fileInputField, value) {
-                     				var file = fileInputField.fileInputEl.dom.files[0];
-                                    me = this;
-									var reader = new FileReader();
-									reader.onload = function(e) {
-										me._importTags(e.target.result);
-                                    }
-                                    
-							 		reader.readAsText(file);
-                                }
-                            }		
-                        },
-                _importTags: function(content){
-                    alert(content);
-                    var lines = content.split('\n');
-                    console.log(lines.length);
-
-                    Ext.define('Tag', {
-                        extend: 'Ext.data.Model',
-                        fields: [
-                            {name: 'name', type: 'string'}
-                        ]
-                    });
-
-                    var records = [];
-                    for(var i = 0; i < lines.length; i++){
-                        records.push({Name: lines[i]});
-                    }
-                    console.log(me);
-                    me.down('#grid').add({
-                        xtype: 'rallygrid',
-                        store: Ext.create('Rally.data.custom.Store', {
-                            data: records,
-                            pageSize: 5
-                        }),
-                        columnCfgs: [
-                            {
-                                text: 'Name', dataIndex: 'Name', flex: 1
-                            }
-                        ]
-                    });
-                }
-            },
-            {
-                xtype: 'panel',
-                title: 'Selection Control',
-                width: 150,
-                frame: false,
-                items: [{
-
-                    xtype: 'fieldcontainer',
-                    defaultType: 'checkboxfield',
-                    items: [
-                        {
-                            boxLabel  : 'Select Tags',
-                            inputValue: '1',
-                            id        : 'checkbox1'
-                        }
-                    ]
-                }]
-            },
-
-            {
-                xtype: ''
+        this.down('#tagFileUploadDialog').add({
+            xtype:      'filefield',
+            itemId:     'fileuploadfield',
+            name:       'tagFileUpload',
+            msgTarget:  'side',
+            anchor:     '100%',
+            width:       400,
+            buttonText: 'Upload Tag File',
+            listeners:  {
+                change: this._readUploadFile,
+                scope:  this
             }
-            ]
+        }) 
+    },
 
+    _readUploadFile: function(fileInputField, value){
+        var file = fileInputField.fileInputEl.dom.files[0];
+        me = this;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            me._onDataUploaded(e.target.result);
+        }
+        reader.readAsText(file);
+    },
 
-        })
+    _onDataUploaded: function(fileContent){
+        var tagNameLine = fileContent.split('\n');
+        console.log(tagNameLine.length);
+        meTwo = this;
+
+        var records = [];
+        for(var i = 0; i < tagNameLine.length; i++){
+            records.push({Name: tagNameLine[i]});
+        }
+        console.log(me);
+        meTwo.down('#tagGrid').add({
+            xtype: 'rallygrid',
+            store: Ext.create('Rally.data.custom.Store', {
+                data: records,
+                pageSize: 5
+            }),
+            columnCfgs: [{
+                text: 'Tag Name', dataIndex: 'Name', flex: 1
+            }]
+        });
     }
 });
-
-/*function(evt){
-                                    evt.preventDefault();
-                                    var tag_file = evt.target.files[0];
-                                    alert(tag_file.name);
-                                    console.log(tag_file);                      
-                                    
-                                    var reader = new FileReader();
-                                    
-                                    var contents;
-                                    reader.onload = function(e){
-                                        contents = e.target.result; 
-                                    };
-                                    reader.readAsText(tag_file);
-                                    alert(contents);
-                                    
-                                }*/
